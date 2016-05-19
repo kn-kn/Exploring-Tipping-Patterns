@@ -1,7 +1,7 @@
 ##### Import data into R #####
 #setwd("C:/Users/Kevin/Desktop/Dropbox/Dropbox/CKME136")
 setwd("C:/Users/Kevin.Nguyen/Dropbox/CKME136")
-raw_df <- read.csv(file="server-survey.csv", head=TRUE)
+raw_df <- read.csv(file="server-survey.csv", head=TRUE, na.strings=c(" ", "NA"))
 
 # Subset variables to be used in analysis
 myvars <- c("State", "asian_prop", "black_prop", "hispanic_prop", "white_prop", "ppbill", 
@@ -94,4 +94,7 @@ df$sex <- factor(df$sex, levels=c(0,1), labels=c("Male", "Female"))
 # Clean variable: Race
 df$race <- factor(df$race, levels=c(1,2,3,4,5), labels=c("Asian", "Black", "Hispanic", "White", "Other"))
 
-write.csv(df, "cleaned_data.csv")
+# Keep only the rows that do not have any missing data
+df <- df[complete.cases(df),]
+
+#write.csv(df, "cleaned_data.csv")
