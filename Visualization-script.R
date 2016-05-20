@@ -46,6 +46,51 @@ background + guides(fill=FALSE) + ggtitle("Distribution of Workers' Race in Data
 p <- ggplot(df, aes(x=factor(race), y=pcttip, fill=race)) + stat_summary(fun.y="mean", geom="bar")
 p + xlab("Race of Worker") + ylab("Tip Percentage") + ggtitle("Tip percentage by Race of Worker") + coord_flip()
 
+### Relationship: Customer Background VS. Server Background ###
+# See http://stackoverflow.com/questions/25752909/multiple-ggplot-linear-regression-lines
+library(reshape2)
+
+# Asian Servers
+cols <- c("pcttip", "asian_prop", "black_prop", "hispanic_prop", "white_prop")
+dfasian <- subset(df, df$race == "Asian")
+dfasian <- dfasian[cols]
+dfasian2 = melt(dfasian, id.vars="pcttip")
+
+ggplot(dfasian2) + geom_jitter(aes(value, pcttip, colour=variable)) + 
+  geom_smooth(aes(value,pcttip, colour=variable), method=lm, se=FALSE) +
+  facet_wrap(~variable, scales="free_x") +
+  labs(x = "Proportion of Customers by Race", y = "Tip %", title = "Tip % for Asian Workers by Customer Race")
+
+# Black Servers
+dfblack <- subset(df, df$race == "Black")
+dfblack <- dfblack[cols]
+dfblack2 <- melt(dfblack, id.vars="pcttip")
+
+ggplot(dfblack2) + geom_jitter(aes(value, pcttip, colour=variable)) + 
+  geom_smooth(aes(value,pcttip, colour=variable), method=lm, se=FALSE) +
+  facet_wrap(~variable, scales="free_x") +
+  labs(x = "Proportion of Customers by Race", y = "Tip %", title = "Tip % for Black Workers by Customer Race")
+
+# Hispanic Servers
+dfhisp <- subset(df, df$race == "Hispanic")
+dfhisp <- dfhisp[cols]
+dfhisp2 <- melt(dfhisp, id.vars="pcttip")
+
+ggplot(dfhisp2) + geom_jitter(aes(value, pcttip, colour=variable)) + 
+  geom_smooth(aes(value,pcttip, colour=variable), method=lm, se=FALSE) +
+  facet_wrap(~variable, scales="free_x") +
+  labs(x = "Proportion of Customers by Race", y = "Tip %", title = "Tip % for Hispanic Workers by Customer Race")
+
+# White Servers
+dfwhite <- subset(df, df$race == "White")
+dfwhite <- dfwhite[cols]
+dfwhite2 <- melt(dfwhite, id.vars="pcttip")
+
+ggplot(dfwhite2) + geom_jitter(aes(value, pcttip, colour=variable)) + 
+  geom_smooth(aes(value,pcttip, colour=variable), method=lm, se=FALSE) +
+  facet_wrap(~variable, scales="free_x") +
+  labs(x = "Proportion of Customers by Race", y = "Tip %", title = "Tip % for White Workers by Customer Race")
+
 # Tipping habits by location
 # Create vector for US state names
 states <- c("al"="al","ak"="ak","az"="az","ar"="ar","ca"="ca","co"="co",
@@ -154,3 +199,40 @@ ggplot(data=b, aes(x=Rating, y=x, group=1)) + geom_line(aes(colour="Extraverted 
 # Server Age
 ggplot(df, aes(x=birth_yr, y=pcttip)) + geom_point(shape=3) + geom_smooth(method=lm) +
   xlab("Birth Year of Worker") + ylab("Tip %") + ggtitle("Tip Percentage by Birth Year of Worker")
+
+# Server Age vs Server Gender
+ggplot(df, aes(x=birth_yr, y=pcttip, colour = sex)) + geom_point() + geom_smooth(method="lm", se=FALSE) +
+  xlab("Birth Year") + ylab("Tip %") + ggtitle("Tip % by Worker Gender and Age")
+
+# Customer Interaction vs. Gender
+# Flair
+ggplot(data=df, aes(x=flair, y=pcttip, group=sex, colour=sex)) + stat_summary(fun.y="mean", geom="line") + 
+  xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Worker Flair")
+
+# Intro
+ggplot(data=df, aes(x=intro, y=pcttip, group=sex, colour=sex)) + stat_summary(fun.y="mean", geom="line") + 
+  xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Introductions")
+
+# Upselling
+ggplot(data=df, aes(x=selling, y=pcttip, group=sex, colour=sex)) + stat_summary(fun.y="mean", geom="line") + 
+  xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Upselling")
+
+# Repeat order  
+ggplot(data=df, aes(x=repeat., y=pcttip, group=sex, colour=sex)) + stat_summary(fun.y="mean", geom="line") +
+  xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Repeating Orders")
+
+# Customer Name
+ggplot(data=df, aes(x=customer_name, y=pcttip, group=sex, colour=sex)) + stat_summary(fun.y="mean", geom="line") + 
+  xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Customer Name")
+
+# Smile
+ggplot(data=df, aes(x=smile, y=pcttip, group=sex, colour=sex)) + stat_summary(fun.y="mean", geom="line") + 
+  xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Smiling")
+
+# Thanking
+ggplot(data=df, aes(x=thanks, y=pcttip, group=sex, colour=sex)) + stat_summary(fun.y="mean", geom="line") + 
+  xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Thanking")
+
+
+### Note: The survey fillers may have mistakenly 1 as always and 4 as never (as vice versa)
+### This may explain the unrational results given
