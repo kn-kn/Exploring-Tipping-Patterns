@@ -1,4 +1,5 @@
 ##### Import data into R #####
+
 #setwd("C:/Users/Kevin/Desktop/Dropbox/Dropbox/CKME136")
 setwd("C:/Users/Kevin.Nguyen/Dropbox/CKME136")
 raw_df <- read.csv(file="server-survey.csv", head=TRUE, na.strings=c(" ", "NA"))
@@ -6,9 +7,10 @@ raw_df <- read.csv(file="server-survey.csv", head=TRUE, na.strings=c(" ", "NA"))
 # Subset variables to be used in analysis
 myvars <- c("State", "asian_prop", "black_prop", "hispanic_prop", "white_prop", "ppbill", 
             "pcttip", "flair", "intro", "selling", "repeat.", "customer_name", "smile",
-            "thanks", "Extraverted_enthusiastic", "Critical_quarrelsome", "Dependable_selfdisciplined",
-            "Anxious_easily_upset", "Reserved_quiet", "Sympathetic_warm", "Disorganized_careless",
-            "Conventional_uncreative", "birth_yr", "sex", "race")
+            "thanks", "Extraverted_enthusiastic", "Critical_quarrelsome", 
+            "Dependable_selfdisciplined","Anxious_easily_upset", "Reserved_quiet", 
+            "Sympathetic_warm", "Disorganized_careless","Conventional_uncreative", 
+            "birth_yr", "sex", "race")
 df <- raw_df[myvars]
 
 ##### Clean variables #####
@@ -19,30 +21,37 @@ df$State <- tolower(df$State)
 
 # Rename state names in the US using the following reference: http://www.stateabbreviations.us/
 library(car)
-df$State <- recode(df$State, '"alabama"="al"; "alaska"="ak"; "arizona"="az"; "arkansas"="ar"; "california"="ca"; "colorado"="co";
-                   "connecticut"="ct"; "delware"="de"; "florida"="fl"; "georgia"="ga"; "hawaii"="hi"; "idaho"="id";
-                   "illinois"="il"; "indiana"="in"; "iowa"="ia"; "kansas"="ks"; "kentucky"="ky"; "louisiana"="la";
-                   "maine"="me"; "maryland"="md"; "massachusetts"="ma"; "michigan"="mi"; "minnesota"="mn"; "mississippi"="mn";
-                   "missouri"="mo"; "montana"="mt"; "nebraska"="ne"; "nevada"="nv"; "new hampshire"="nh"; "new jersey"="nj";
-                   "new mexico"="nm"; "new york"="ny"; "north carolina"="nc"; "north dakota"="nd"; "ohio"="oh"; "oklahoma"="ok";
-                   "oregon"="or"; "pennsylvania"="pa"; "rhode island"="ri"; "south carolina"="sc"; "south dakota"="sc";
-                   "tennessee"="tn"; "texas"="tx"; "utah"="ut"; "vermont"="vt"; "virginia"="va"; "washington"="wa";
+df$State <- recode(df$State, '"alabama"="al"; "alaska"="ak"; "arizona"="az"; "arkansas"="ar"; 
+                   "california"="ca"; "colorado"="co"; "connecticut"="ct"; "delware"="de";
+                   "florida"="fl"; "georgia"="ga"; "hawaii"="hi"; "idaho"="id";"illinois"="il"; 
+                   "indiana"="in"; "iowa"="ia"; "kansas"="ks"; "kentucky"="ky"; "louisiana"="la";
+                   "maine"="me"; "maryland"="md"; "massachusetts"="ma"; "michigan"="mi"; 
+                   "minnesota"="mn"; "mississippi"="mn"; "missouri"="mo"; 
+                   "montana"="mt"; "nebraska"="ne"; "nevada"="nv"; "new hampshire"="nh"; 
+                   "new jersey"="nj"; "new mexico"="nm"; "new york"="ny"; "north carolina"="nc"; 
+                   "north dakota"="nd"; "ohio"="oh"; "oklahoma"="ok"; "oregon"="or"; 
+                   "pennsylvania"="pa"; "rhode island"="ri"; "south carolina"="sc"; 
+                   "south dakota"="sc"; "tennessee"="tn"; "texas"="tx"; "utah"="ut"; 
+                  "vermont"="vt"; "virginia"="va"; "washington"="wa";
                    "west virginia"="wv"; "wisconsin"="wi"; "wyoming"="wy"')
 
 # Rename state (province) names in Canada
-df$State <- recode(df$State, '"alberta"="ab"; "british columbia"="bc"; "manitoba"="mb"; "new brunswick"="nb";
-                   "newfoundland"="nl"; "northwest territories"="nt"; "nova scotia"="ns"; "nunavut"="nu"; "ontario"="on";
+df$State <- recode(df$State, '"alberta"="ab"; "british columbia"="bc"; "manitoba"="mb"; 
+                   "new brunswick"="nb"; "newfoundland"="nl"; "northwest territories"="nt"; 
+                   "nova scotia"="ns"; "nunavut"="nu"; "ontario"="on";
                    "prince edward island"="pe"; "quebec"="qc"; "saskatchewan"="sk"; "yukon"="yt"')
 
 # Change all provinces and observations that have the text "canada" in them to simply "canada" 
-for (province in c("ab", "bc", "mb", "nb", "nl", "nt", "ns", "nu", "on", "pe", "qc", "sk", "yt", "canada")) {
+for (province in c("ab", "bc", "mb", "nb", "nl", "nt", "ns", "nu", "on", "pe", "qc", 
+                   "sk", "yt", "canada")) {
   df$State[grepl(province, df$State)] <- "canada"
 }
 
 # Clean variable: Proportion
 df$total_prop <- df$asian_prop + df$black_prop + df$hispanic_prop + df$white_prop
 
-# If total proportion is equal to or less than 1, multiply by 100 (the user inputted in percentages rather than whole numbers)
+# If total proportion is equal to or less than 1, multiply by 100 
+# (the user inputted in percentages rather than whole numbers)
 # See http://stackoverflow.com/questions/30774096/based-on-the-value-in-one-column-change-the-value-in-another-column
 dfprop <- df[2:5]
 for (col in names(dfprop)) {
@@ -58,7 +67,8 @@ for (col in names(dfprop)) {
 df$total_prop <- NULL 
 
 # Clean variable: ppbill
-# Remove observations where the bill is equal to or under 5 dollars as well as equal to or over 200 dollars
+# Remove observations where the bill is equal to or under 5 dollars 
+# as well as equal to or over 200 dollars
 df$ppbill <- ifelse(df$ppbill <= 5 | df$ppbill >= 200, NA, df$ppbill)
 
 # If tip percentage is under 1, multiply by 100 to properly fix percentage
@@ -67,34 +77,465 @@ df$pcttip <- ifelse(df$pcttip <= 1, df$pcttip*100, df$pcttip)
 # Remove observations where the tip percentage is over 50 percent
 df$pcttip <- ifelse(df$pcttip >= 50, NA, df$pcttip)
 
+# Clean variable: Birth Year
+# Remove observations where the birth year is between 100 to 1900 OR over 2000
+df$birth_yr <- ifelse(df$birth_yr >= 100 & df$birth_yr <= 1900 | df$birth_yr >= 2000, NA, df$birth_yr)
+
+# If birth year is under 100, then add 1900 as the user inputting the last two digits 
+# of their birth year only (e.g. 48 -> 1948)
+df$birth_yr <- ifelse(df$birth_yr < 100, df$birth_yr + 1900, df$birth_yr)
+
 # Clean variable: Customer Interaction Ratings
-# Properly label the integers with their ordered level names
+# Use ordered instead of factor for easier visualization
 dfrating <- df[8:14]
 for (col in names(dfrating)) {
   df[[col]] <- ordered(df[[col]], levels=c(1,2,3,4), labels=c("Never", "Sometimes", "Often", "Always"))
 }
 
 # Clean variable: Waiter traits
-# Ensure R understands the numbers are ordered ~ 1 (low) to 7 (high)
+# Use ordered instead of factor here as well
 dftrait <- df[15:22]
 for (col in names(dftrait)) {
   df[[col]] <- ordered(df[[col]], levels=c(1,2,3,4,5,6,7))
 }
 
-# Clean variable: Birth Year
-# Remove observations where the birth year is between 100 to 1900 OR over 2000
-df$birth_yr <- ifelse(df$birth_yr >= 100 & df$birth_yr <= 1900 | df$birth_yr >= 2000, NA, df$birth_yr)
-
-# If birth year is under 100, then add 1900 as the user inputting the last two digits of their birth year only (e.g. 48 -> 1948)
-df$birth_yr <- ifelse(df$birth_yr < 100, df$birth_yr + 1900, df$birth_yr)
-
 # Clean variable: Sex
 df$sex <- factor(df$sex, levels=c(0,1), labels=c("Male", "Female"))
 
 # Clean variable: Race
-df$race <- factor(df$race, levels=c(1,2,3,4,5), labels=c("Asian", "Black", "Hispanic", "White", "Other"))
+df$race <- factor(df$race, levels=c(1,2,3,4,5), labels=c("Asian", "Black", "Hispanic", 
+                                                         "White", "Other"))
 
 # Keep only the rows that do not have any missing data
 df <- df[complete.cases(df),]
 
-#write.csv(df, "cleaned_data.csv")
+write.csv(df, "cleaned_data.csv")
+
+##### Visualizations #####
+
+# Use df created before*
+
+library(ggplot2)
+
+# Plot distribution of sex of waiters/ waitresses
+gender <- ggplot(df, aes(x=sex, fill=sex)) + geom_bar()
+gender + guides(fill=FALSE) + ggtitle("Distribution of Workers' Gender in Dataset")
+
+# Plot boxplot to show distribution of tips for each gender
+gendertip <- ggplot(df, aes(sex, pcttip, fill=sex))
+gendertip + geom_boxplot() + guides(fill=FALSE) + ggtitle("Tip percentage by Gender")
+
+# Test if there is a significant difference between tips for genders
+t.test(df$pcttip~df$sex, conf.level = 0.95)
+
+# Plot scatterplots of proportion of race (customers) by tip %
+# Asian customers
+ggplot(df, aes(x=asian_prop, y=pcttip)) +
+  geom_point(colour="dark red") +
+  geom_smooth(method = "lm", aes(fill = "confidence"), alpha = 0.5)
+
+# Black customers
+ggplot(df, aes(x=black_prop, y=pcttip)) +
+  geom_point(colour="black") +
+  geom_smooth(method = "lm", aes(fill = "confidence"), alpha = 0.5)
+
+# Hispanic customers
+ggplot(df, aes(x=hispanic_prop, y=pcttip)) +
+  geom_point(colour="blue") +
+  geom_smooth(method = "lm", aes(fill = "confidence"), alpha = 0.5)
+
+# White customers
+ggplot(df, aes(x=white_prop, y=pcttip)) +
+  geom_point(colour="green") +
+  geom_smooth(method = "lm", aes(fill = "confidence"), alpha = 0.5)
+
+# Plot distribution of ethnical backgrounds of waiters/ waitresses
+background <- ggplot(df, aes(x=race, fill=race)) + geom_bar()
+background + guides(fill=FALSE) + ggtitle("Distribution of Workers' Race in Dataset")
+
+# Plot average tip percentage received by worker by worker race
+p <- ggplot(df, aes(x=factor(race), y=pcttip, fill=race)) + stat_summary(fun.y="mean", geom="bar")
+p + xlab("Race of Worker") + ylab("Tip Percentage") + 
+  ggtitle("Tip percentage by Race of Worker") + coord_flip()
+
+### Relationship: Customer Background VS. Server Background ###
+# See http://stackoverflow.com/questions/25752909/multiple-ggplot-linear-regression-lines
+library(reshape2)
+
+# Asian Servers
+cols <- c("pcttip", "asian_prop", "black_prop", "hispanic_prop", "white_prop")
+dfasian <- subset(df, df$race == "Asian")
+dfasian <- dfasian[cols]
+dfasian2 = melt(dfasian, id.vars="pcttip")
+
+ggplot(dfasian2) + geom_jitter(aes(value, pcttip, colour=variable)) + 
+  geom_smooth(aes(value,pcttip, colour=variable), method=lm, se=FALSE) +
+  facet_wrap(~variable, scales="free_x") +
+  labs(x = "Proportion of Customers by Race", y = "Tip %", 
+       title = "Tip % for Asian Workers by Customer Race")
+
+# Black Servers
+dfblack <- subset(df, df$race == "Black")
+dfblack <- dfblack[cols]
+dfblack2 <- melt(dfblack, id.vars="pcttip")
+
+ggplot(dfblack2) + geom_jitter(aes(value, pcttip, colour=variable)) + 
+  geom_smooth(aes(value,pcttip, colour=variable), method=lm, se=FALSE) +
+  facet_wrap(~variable, scales="free_x") +
+  labs(x = "Proportion of Customers by Race", y = "Tip %", 
+       title = "Tip % for Black Workers by Customer Race")
+
+# Hispanic Servers
+dfhisp <- subset(df, df$race == "Hispanic")
+dfhisp <- dfhisp[cols]
+dfhisp2 <- melt(dfhisp, id.vars="pcttip")
+
+ggplot(dfhisp2) + geom_jitter(aes(value, pcttip, colour=variable)) + 
+  geom_smooth(aes(value,pcttip, colour=variable), method=lm, se=FALSE) +
+  facet_wrap(~variable, scales="free_x") +
+  labs(x = "Proportion of Customers by Race", y = "Tip %", 
+       title = "Tip % for Hispanic Workers by Customer Race")
+
+# White Servers
+dfwhite <- subset(df, df$race == "White")
+dfwhite <- dfwhite[cols]
+dfwhite2 <- melt(dfwhite, id.vars="pcttip")
+
+ggplot(dfwhite2) + geom_jitter(aes(value, pcttip, colour=variable)) + 
+  geom_smooth(aes(value,pcttip, colour=variable), method=lm, se=FALSE) +
+  facet_wrap(~variable, scales="free_x") +
+  labs(x = "Proportion of Customers by Race", y = "Tip %", 
+       title = "Tip % for White Workers by Customer Race")
+
+# Tipping habits by location
+# Create vector for US state names
+states <- c("al"="al","ak"="ak","az"="az","ar"="ar","ca"="ca","co"="co",
+            "ct"="ct","de"="de","dc"="dc","fl"="fl","ga"="ga","hi"="hi","id"="id","il"="il","in"="in",
+            "ia"="ia","ks"="ks","ky"="ky","la"="la","me"="me","md"="md","ma"="ma","mi"="mi","mn"="mn",
+            "ms"="ms","mo"="mo","mt"="mt","ne"="ne","nv"="nv","nh"="nh","nj"="nj","nm"="nm","ny"="ny",
+            "nc"="nc","nd"="nd","oh"="oh","ok"="ok","or"="or","pw"="pw","pa"="pa","ri"="ri","sc"="sc",
+            "sd"="sd","tn"="tn","tx"="tx","ut"="ut","vt"="vt","va"="va","wa"="wa","wv"="wv","wi"="wi",
+            "wy"="wy")
+
+# Subset data for US workers only into a different data frame
+tableUS <- subset(df, State %in% names(states), select=State:race)
+tableCAD <- subset(df, State %in% "canada", select=State:race)
+tableOTHER <- df[-which(df$State %in% names(states) | df$State %in% "canada"),]
+
+# See how much observations there are for US workers and Canadian workers
+length(tableUS$State)
+length(tableCAD$State)
+length(tableOTHER$State)
+
+# Calculate average mean tip percentage
+meanUS <- mean(tableUS$pcttip, na.rm=TRUE)
+meanCAD <- mean(tableCAD$pcttip, na.rm=TRUE)
+meanOTHER <- mean(tableOTHER$pcttip, na.rm=TRUE)
+meanWorld <- mean(df$pcttip, na.rm=TRUE)
+
+means <- c(meanUS, meanCAD, meanOTHER, meanWorld)
+names <- c("Mean USA", "Mean Canada", "Mean Other", "Mean Worldwide")
+names <- factor(names, level=c("Mean USA", "Mean Canada", "Mean Other", "Mean Worldwide"))
+
+world_means <- data.frame(names, means)
+
+ggplot(data = world_means, aes(x=names, y=means)) + geom_bar(stat="identity") + 
+  xlab("") + ylab("Average Tip %")
+
+# Calculate mean tipping percentage by state
+tip <- aggregate(pcttip~State, tableUS, mean)
+tip$region <- tip$State # ensure column names match to merge later on
+
+# Utilize the maps library to plot a map of the US
+library(maps)
+library(car)
+states_name <- map_data("state")
+
+# Recode the state names received from the maps library in order to merge
+states_name$region <- recode(states_name$region, 
+  '"alabama"="al"; "alaska"="ak"; "arizona"="az"; "arkansas"="ar"; "california"="ca"; "colorado"="co";
+  "connecticut"="ct"; "delware"="de"; "florida"="fl"; "georgia"="ga"; "hawaii"="hi"; "idaho"="id";
+  "illinois"="il"; "indiana"="in"; "iowa"="ia"; "kansas"="ks"; "kentucky"="ky"; "louisiana"="la";
+  "maine"="me"; "maryland"="md"; "massachusetts"="ma"; "michigan"="mi"; "minnesota"="mn"; 
+  "mississippi"="mn"; "missouri"="mo"; "montana"="mt"; "nebraska"="ne"; "nevada"="nv"; 
+  "new hampshire"="nh"; "new jersey"="nj"; "new mexico"="nm"; "new york"="ny"; "north carolina"="nc"; 
+  "north dakota"="nd"; "ohio"="oh"; "oklahoma"="ok"; "oregon"="or"; "pennsylvania"="pa"; 
+  "rhode island"="ri"; "south carolina"="sc"; "south dakota"="sc"; "tennessee"="tn"; "texas"="tx"; 
+  "utah"="ut"; "vermont"="vt"; "virginia"="va"; "washington"="wa"; "west virginia"="wv"; 
+  "wisconsin"="wi"; "wyoming"="wy"')
+
+# Merge tables together
+choro <- merge(states_name, tip, sort = FALSE, by = "region")
+choro <- choro[order(choro$order), ]
+
+# Plot average tip percentage by US state
+map <- ggplot(choro, aes(long, lat)) + geom_polygon(aes(group = group, fill = pcttip))
+map + scale_fill_gradient(low="red", high="green") + ggtitle("Average Tip Percentage by US State") +
+  guides(fill=guide_legend(title="Tip %"))
+
+# View top 3 states
+tip2 <- tip[with(tip, order(-pcttip)),] # sort descending by tip %
+head(tip2, 3)
+
+# View bottom 3 states
+tail(tip2, 3)
+
+# Plot bill size against tip percentage
+ggplot(df, aes(x=ppbill, y=pcttip)) + geom_point(shape=1) + geom_smooth(method=lm) +
+  xlab("Bill per Person ($)") + ylab("Tip %") + ggtitle("Tip Percentage by Bill Size per Person")
+
+# Customer Interactions
+# See http://www.r-bloggers.com/grouped-means-again/
+a <- aggregate(df$pcttip, by=list(Rating=df$flair), mean)
+a1 <- aggregate(df$pcttip, by=list(Rating=df$intro), mean)
+a2 <- aggregate(df$pcttip, by=list(Rating=df$selling), mean)
+a3 <- aggregate(df$pcttip, by=list(Rating=df$repeat.), mean)
+a4 <- aggregate(df$pcttip, by=list(Rating=df$customer_name), mean)
+a5 <- aggregate(df$pcttip, by=list(Rating=df$smile), mean)
+a6 <- aggregate(df$pcttip, by=list(Rating=df$thanks), mean)
+
+ggplot(data=a, aes(x=Rating, y=x, group=1, size=0.1)) + geom_line(aes(colour="Flair"))  +
+  geom_line(aes(y=a1$x, colour="Intro")) +
+  geom_line(aes(y=a2$x, colour="Selling")) +
+  geom_line(aes(y=a3$x, colour="Repeat")) +
+  geom_line(aes(y=a4$x, colour="Customer Name")) +
+  geom_line(aes(y=a5$x, colour="Smile")) +
+  geom_line(aes(y=a6$x, colour="Thanks")) +
+  ylab("Average Tipping %") + ggtitle("Average Tipping % by Customer/ Worker Interaction")
+
+# See relationship between upselling and per person bill
+ggplot(data=df, aes(x=selling, y=ppbill, fill=selling)) + geom_boxplot() + guides(fill=FALSE) +
+  xlab("") + ylab("Per person bill") + ggtitle("Total Bill Size by Customer Interaction: Upselling")
+
+# Server Traits
+b <- aggregate(df$pcttip, by=list(Rating=df$Extraverted_enthusiastic), mean)
+b1 <- aggregate(df$pcttip, by=list(Rating=df$Critical_quarrelsome), mean)
+b2 <- aggregate(df$pcttip, by=list(Rating=df$Dependable_selfdisciplined), mean)
+b3 <- aggregate(df$pcttip, by=list(Rating=df$Anxious_easily_upset), mean)
+b4 <- aggregate(df$pcttip, by=list(Rating=df$Reserved_quiet), mean)
+b5 <- aggregate(df$pcttip, by=list(Rating=df$Sympathetic_warm), mean)
+b6 <- aggregate(df$pcttip, by=list(Rating=df$Disorganized_careless), mean)
+b7 <- aggregate(df$pcttip, by=list(Rating=df$Conventional_uncreative), mean)
+
+ggplot(data=b, aes(x=Rating, y=x, group=1, size=0.1)) + 
+  geom_line(aes(colour="Extraverted Enthusiastic")) +
+  geom_line(aes(y=b1$x, colour="Critical Quarrelsome")) +
+  geom_line(aes(y=b2$x, colour="Dependable Selfdisciplined")) +
+  geom_line(aes(y=b3$x, colour="Anxious Easily Upset")) +
+  geom_line(aes(y=b4$x, colour="Reserved Quiet")) +
+  geom_line(aes(y=b5$x, colour="Sympathetic Warm")) +
+  geom_line(aes(y=b6$x, colour="Disorganized Careless")) +
+  geom_line(aes(y=b7$x, colour="Conventional Uncreative")) +
+  ylab("Average Tipping %") + ggtitle("Average Tipping % by Worker Traits")
+
+# Server Age
+ggplot(df, aes(x=birth_yr, y=pcttip)) + geom_point(shape=3) + geom_smooth(method=lm) +
+  xlab("Birth Year of Worker") + ylab("Tip %") + ggtitle("Tip Percentage by Birth Year of Worker")
+
+# Server Age vs Server Gender
+ggplot(df, aes(x=birth_yr, y=pcttip, colour = sex)) + geom_point() + 
+  geom_smooth(method="lm", se=FALSE) +
+  xlab("Birth Year") + ylab("Tip %") + ggtitle("Tip % by Worker Gender and Age")
+
+# Customer Interaction vs. Gender
+# Flair
+ggplot(data=df, aes(x=flair, y=pcttip, group=sex, colour=sex)) + 
+  stat_summary(fun.y="mean", geom="line") + 
+  xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Worker Flair")
+
+# Intro
+ggplot(data=df, aes(x=intro, y=pcttip, group=sex, colour=sex)) + 
+  stat_summary(fun.y="mean", geom="line") + 
+  xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Introductions")
+
+# Upselling
+ggplot(data=df, aes(x=selling, y=pcttip, group=sex, colour=sex)) + 
+  stat_summary(fun.y="mean", geom="line") + 
+  xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Upselling")
+
+# Repeat order  
+ggplot(data=df, aes(x=repeat., y=pcttip, group=sex, colour=sex)) + 
+  stat_summary(fun.y="mean", geom="line") +
+  xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Repeating Orders")
+
+# Customer Name
+ggplot(data=df, aes(x=customer_name, y=pcttip, group=sex, colour=sex)) + 
+  stat_summary(fun.y="mean", geom="line") + 
+  xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Customer Name")
+
+# Smile
+ggplot(data=df, aes(x=smile, y=pcttip, group=sex, colour=sex)) + 
+  stat_summary(fun.y="mean", geom="line") + 
+  xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Smiling")
+
+# Thanking
+ggplot(data=df, aes(x=thanks, y=pcttip, group=sex, colour=sex)) + 
+  stat_summary(fun.y="mean", geom="line") + 
+  xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Thanking")
+
+### Note: The survey fillers may have mistakenly understood 1 as always and 4 as never (as vice versa)
+### This may explain the unrational results given
+
+##### Regression Model Analysis / Setting Up #####
+
+rm(list = ls()) # remove work environment to start fresh
+
+#setwd("C:/Users/Kevin.Nguyen/Dropbox/CKME136")
+setwd("C:/Users/Kevin/Desktop/Dropbox/Dropbox/CKME136")
+df <- read.csv(file="clean_string_data.csv", head=TRUE)
+
+# Categorize the State variable
+states <- c("al","ak","az","ar","ca","co",
+            "ct","de","dc","fl","ga","hi","id","il","in",
+            "ia","ks","ky","la","me","md","ma","mi","mn",
+            "ms","mo","mt","ne","nv","nh","nj","nm","ny",
+            "nc","nd","oh","ok","or","pw","pa","ri","sc",
+            "sd","tn","tx","ut","vt","va","wa","wv","wi",
+            "wy")
+
+# USA = 1, Canada = 2, Other = 3
+df$State <- ifelse(df$State %in% states, 1,
+                   ifelse(df$State %in% "canada", 2, 3))
+
+df$State <- factor(df$State, levels=c(1,2,3))
+
+
+
+# Change from order back to previous as the ratings are not categorical
+dfrating <- df[9:15]
+for (col in names(dfrating)) {
+  df[[col]] <- ifelse(df[[col]] == "Never", 1,
+                      ifelse(df[[col]] == "Sometimes", 2,
+                             ifelse(df[[col]] == "Often", 3, 4)))
+}
+
+# Sex
+df$sex <- factor(df$sex, levels=c("Male", "Female"), labels=c(0,1))
+# Race of Worker
+df$race <- factor(df$race, levels=c("Asian", "Black", "Hispanic", "White"), labels=c(1,2,3,4))
+
+
+# Create formula
+formula_text <- paste(names(df)[8], "~",
+                      paste(names(df[c(2:7,9:26)]), collapse="+"))
+formula <- as.formula(formula_text)
+formula
+
+##### Model Building #####
+# Create Multiple Regression Linear Example
+set.seed(12)
+fit <- lm(formula, data=df)
+summary(fit)
+
+# Lets normalize the data - DNE
+#df_numeric <- df[, lapply(df, is.numeric) == TRUE]
+#df_numeric_scaled <- scale(df_numeric)
+#df_numeric_scaled <- as.data.frame(df_numeric_scaled)
+#df_scaled <-cbind(df[,c(1,2,25,26)], df_numeric_scaled)
+
+#df_scaled[5] <- NULL
+
+#formula_text <- paste(names(df)[9], "~",
+                      #paste(names(df[c(2:8,10:26)]), collapse="+"))
+#formula <- as.formula(formula_text)
+#formula
+
+#fit <- lm(formula, data=df)
+#summary(fit)
+
+
+##### Assumption Testing #####
+# See link: http://www.statmethods.net/stats/regression.html
+
+library(car)
+
+# Check multicollinearity
+vif(fit)
+
+# see http://strata.uga.edu/6370/rtips/regressionPlots.html
+# To see all plots at once rather than 1 by 1
+par(mfrow=c(2,2)) # change panel layout to 2x2
+plot(fit)
+par(mfrow=c(1,1)) # change layout back to 1x1
+
+
+# Outliers
+outlierTest(fit)
+
+# Influential Observations
+# Cook's D plot
+cutoff <- 4/((nrow(df)-length(fit$coefficients)-2))
+plot(fit, which=4, cook.levels=cutoff)
+
+# Influence plot
+influencePlot(fit, id.method="noteworthy", main="Influence Plot", sub="Circle Size is proportional to Cook's Distance")
+
+# Evaluate homoscedasticity / Breusch-Pagan test
+ncvTest(fit)
+
+# Our VIF check resulted in the 4 proportions having multicollinearity issues
+# Lets remove these 4 variables from our analysis
+props <- c("asian_prop", "black_prop", "hispanic_prop", "white_prop")
+for (col in props) {
+  df[[col]] <- NULL
+}
+
+# Rerun tests?
+formula_text <- paste(names(df)[4], "~",
+                      paste(names(df[c(2:3,5:22)]), collapse="+"))
+formula <- as.formula(formula_text)
+formula
+
+fit <- lm(formula, data=df)
+summary(fit)
+
+## There is no real difference! ##
+
+# Transformation on PCTTIP
+df <- cbind(df, 1/df$pcttip)
+
+df[[23]] <- NULL
+
+
+formula_text <- paste(names(df)[23], "~",
+                      paste(names(df[c(2:3,5:22)]), collapse="+"))
+formula <- as.formula(formula_text)
+formula
+
+fit <- lm(formula, data=df)
+summary(fit)
+
+## By transforming the y-variable, there is once again no change in R^2 adjusted ##
+
+# Recall most of the data are part of the US AND nearly all white workers. What if we remove these variables?
+df$State <- NULL
+df$race <- NULL
+df[[21]] <- NULL
+
+formula_text <- paste(names(df)[3], "~",
+                      paste(names(df[c(2,4:20)]), collapse="+"))
+formula <- as.formula(formula_text)
+formula
+
+fit <- lm(formula, data=df)
+summary(fit)
+
+## The adjusted R^2 fell even further!!!
+
+
+# Residual plot
+crPlots(fit, terms=~.)
+# NOTE: these plots show us two things:
+# ppbill is heavily skewed to the left 
+# meaning many of the bills are on the cheaper end like $20 pp
+
+# birth year is skewed to the right
+# meaning the average age is on the younger side
+
+hist(df$birth_yr, breaks=c(10))
+hist(df$ppbill, breaks=c(10))
+
+# See heteroscedasticity remedies:
+#https://academic.macewan.ca/burok/Stat378/notes/remedies.pdf
+
+# What if we considered cases where the bill is only from $15 - $35?
