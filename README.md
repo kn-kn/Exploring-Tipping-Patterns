@@ -7,7 +7,7 @@ The Tableau storyboard created for this project can be accessed through: https:/
 
 **Description of Files**
 - Tipping-script.R: The raw R script for this project
-- Tip-Project.ipynb: The Jupyter notebook created for this project; script used is only similar to the R Sscript above
+- Tip-Project.ipynb: The Jupyter notebook created for this project; script is very similar to the R script above
 - server-survey.csv: The raw data (can be accessed using the link mentioned above)
 - clean_string_data.csv: The data used for the multiple regression analysis
 - Tableau_data_2.xlsx: Dataset used exclusively to prepare the Tableau storyboard
