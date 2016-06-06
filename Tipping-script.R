@@ -457,25 +457,6 @@ set.seed(12)
 fit <- lm(formula, data=df)
 summary(fit)
 
-# Lets normalize the data - DNE
-#df_numeric <- df[, lapply(df, is.numeric) == TRUE]
-#df_numeric_scaled <- scale(df_numeric)
-#df_numeric_scaled <- as.data.frame(df_numeric_scaled)
-#df_scaled <-cbind(df[,c(1,2,25,26)], df_numeric_scaled)
-
-#df_scaled[5] <- NULL
-
-#formula_text <- paste(names(df)[9], "~",
-                      #paste(names(df[c(2:8,10:26)]), collapse="+"))
-#formula <- as.formula(formula_text)
-#formula
-
-#fit <- lm(formula, data=df)
-#summary(fit)
-
-##### Assumption Testing #####
-# See link: http://www.statmethods.net/stats/regression.html
-
 # Check multicollinearity
 vif(fit)
 
