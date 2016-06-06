@@ -3,7 +3,17 @@ Project exploring tipping patterns and characteristics using R
 
 You can directly access the raw data used in this project through: http://www.had.co.nz/stat480/data/server-survey.csv
 
-Here is the information for the variables used in the project:
+The Tableau storyboard created for this project can be accessed through: https://public.tableau.com/profile/loo.boo#!/vizhome/TippingProject/Story
+
+**Description of Files**
+- Tipping-script.R: The raw R script for this project
+- Tip-Project.ipynb: The Jupyter notebook created for this project; script used is only similar to the R Sscript above
+- server-survey.csv: The raw data (can be accessed using the link mentioned above)
+- clean_string_data.csv: The data used for the multiple regression analysis
+- Tableau_data_2.xlsx: Dataset used exclusively to prepare the Tableau storyboard
+
+
+**Information of Variables Used in Project**
 
 | Variable Name        | Description           |
 | ------------- |:-------------:|
