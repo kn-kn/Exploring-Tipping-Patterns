@@ -1,3 +1,10 @@
+# Load libraries
+library(car) # Rename State names and plots
+library(ggplot2) # Visualizations
+library(reshape2) # Melt function to assist in visualizating a map of the USA
+library(maps) # For USA map
+library(leaps) # Subsets regression
+
 ##### Import data into R #####
 
 #setwd("C:/Users/Kevin/Desktop/Dropbox/Dropbox/CKME136")
@@ -16,11 +23,10 @@ df <- raw_df[myvars]
 ##### Clean variables #####
 
 # Clean variable: State
-# Set variable "State" to all lowercase letters to easier deal with cleaning
+# Set variable "State" to all lowercase letters to make cleaning easier to deal with
 df$State <- tolower(df$State)
 
-# Rename state names in the US using the following reference: http://www.stateabbreviations.us/
-library(car)
+# Rename state names in the USA using the following reference: http://www.stateabbreviations.us/
 df$State <- recode(df$State, '"alabama"="al"; "alaska"="ak"; "arizona"="az"; "arkansas"="ar"; 
                    "california"="ca"; "colorado"="co"; "connecticut"="ct"; "delware"="de";
                    "florida"="fl"; "georgia"="ga"; "hawaii"="hi"; "idaho"="id";"illinois"="il"; 
@@ -35,7 +41,7 @@ df$State <- recode(df$State, '"alabama"="al"; "alaska"="ak"; "arizona"="az"; "ar
                   "vermont"="vt"; "virginia"="va"; "washington"="wa";
                    "west virginia"="wv"; "wisconsin"="wi"; "wyoming"="wy"')
 
-# Rename state (province) names in Canada
+# Rename State (Province) names in Canada
 df$State <- recode(df$State, '"alberta"="ab"; "british columbia"="bc"; "manitoba"="mb"; 
                    "new brunswick"="nb"; "newfoundland"="nl"; "northwest territories"="nt"; 
                    "nova scotia"="ns"; "nunavut"="nu"; "ontario"="on";
@@ -51,7 +57,7 @@ for (province in c("ab", "bc", "mb", "nb", "nl", "nt", "ns", "nu", "on", "pe", "
 df$total_prop <- df$asian_prop + df$black_prop + df$hispanic_prop + df$white_prop
 
 # If total proportion is equal to or less than 1, multiply by 100 
-# (the user inputted in percentages rather than whole numbers)
+# Why? The user inputted in percentages rather than whole numbers
 # See http://stackoverflow.com/questions/30774096/based-on-the-value-in-one-column-change-the-value-in-another-column
 dfprop <- df[2:5]
 for (col in names(dfprop)) {
@@ -81,7 +87,7 @@ df$pcttip <- ifelse(df$pcttip >= 50, NA, df$pcttip)
 # Remove observations where the birth year is between 100 to 1900 OR over 2000
 df$birth_yr <- ifelse(df$birth_yr >= 100 & df$birth_yr <= 1900 | df$birth_yr >= 2000, NA, df$birth_yr)
 
-# If birth year is under 100, then add 1900 as the user inputting the last two digits 
+# If birth year is under 100, then add 1900 as the user was inputting the last two digits 
 # of their birth year only (e.g. 48 -> 1948)
 df$birth_yr <- ifelse(df$birth_yr < 100, df$birth_yr + 1900, df$birth_yr)
 
@@ -115,8 +121,6 @@ write.csv(df, "cleaned_data.csv")
 
 # Use df created before*
 
-library(ggplot2)
-
 # Plot distribution of sex of waiters/ waitresses
 gender <- ggplot(df, aes(x=sex, fill=sex)) + geom_bar()
 gender + guides(fill=FALSE) + ggtitle("Distribution of Workers' Gender in Dataset")
@@ -127,6 +131,9 @@ gendertip + geom_boxplot() + guides(fill=FALSE) + ggtitle("Tip percentage by Gen
 
 # Test if there is a significant difference between tips for genders
 t.test(df$pcttip~df$sex, conf.level = 0.95)
+
+# Distribution of Tip Percentages
+qplot(pcttip, data=df, geom="histogram", binwidth=5) + ggtitle("Distribution of Tip Percentages")
 
 # Plot scatterplots of proportion of race (customers) by tip %
 # Asian customers
@@ -160,7 +167,6 @@ p + xlab("Race of Worker") + ylab("Tip Percentage") +
 
 ### Relationship: Customer Background VS. Server Background ###
 # See http://stackoverflow.com/questions/25752909/multiple-ggplot-linear-regression-lines
-library(reshape2)
 
 # Asian Servers
 cols <- c("pcttip", "asian_prop", "black_prop", "hispanic_prop", "white_prop")
@@ -247,8 +253,6 @@ tip <- aggregate(pcttip~State, tableUS, mean)
 tip$region <- tip$State # ensure column names match to merge later on
 
 # Utilize the maps library to plot a map of the US
-library(maps)
-library(car)
 states_name <- map_data("state")
 
 # Recode the state names received from the maps library in order to merge
@@ -280,6 +284,9 @@ head(tip2, 3)
 # View bottom 3 states
 tail(tip2, 3)
 
+# Distribution of Bill Sizes
+qplot(ppbill, data=df, geom="histogram", binwidth=5) + ggtitle("Distribution of Bill Sizes")
+
 # Plot bill size against tip percentage
 ggplot(df, aes(x=ppbill, y=pcttip)) + geom_point(shape=1) + geom_smooth(method=lm) +
   xlab("Bill per Person ($)") + ylab("Tip %") + ggtitle("Tip Percentage by Bill Size per Person")
@@ -303,10 +310,6 @@ ggplot(data=a, aes(x=Rating, y=x, group=1, size=0.1)) + geom_line(aes(colour="Fl
   geom_line(aes(y=a6$x, colour="Thanks")) +
   ylab("Average Tipping %") + ggtitle("Average Tipping % by Customer/ Worker Interaction")
 
-# See relationship between upselling and per person bill
-ggplot(data=df, aes(x=selling, y=ppbill, fill=selling)) + geom_boxplot() + guides(fill=FALSE) +
-  xlab("") + ylab("Per person bill") + ggtitle("Total Bill Size by Customer Interaction: Upselling")
-
 # Server Traits
 b <- aggregate(df$pcttip, by=list(Rating=df$Extraverted_enthusiastic), mean)
 b1 <- aggregate(df$pcttip, by=list(Rating=df$Critical_quarrelsome), mean)
@@ -327,6 +330,9 @@ ggplot(data=b, aes(x=Rating, y=x, group=1, size=0.1)) +
   geom_line(aes(y=b6$x, colour="Disorganized Careless")) +
   geom_line(aes(y=b7$x, colour="Conventional Uncreative")) +
   ylab("Average Tipping %") + ggtitle("Average Tipping % by Worker Traits")
+
+# Distribution of Server Age
+qplot(birth_yr, data=df, geom="histogram", binwidth=1) + ggtitle("Distribution of Server Age")
 
 # Server Age
 ggplot(df, aes(x=birth_yr, y=pcttip)) + geom_point(shape=3) + geom_smooth(method=lm) +
@@ -352,6 +358,10 @@ ggplot(data=df, aes(x=intro, y=pcttip, group=sex, colour=sex)) +
 ggplot(data=df, aes(x=selling, y=pcttip, group=sex, colour=sex)) + 
   stat_summary(fun.y="mean", geom="line") + 
   xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Upselling")
+
+# See relationship between upselling and per person bill
+ggplot(data=df, aes(x=selling, y=ppbill, fill=selling)) + geom_boxplot() + guides(fill=FALSE) +
+  xlab("") + ylab("Per person bill") + ggtitle("Total Bill Size by Customer Interaction: Upselling")
 
 # Repeat order  
 ggplot(data=df, aes(x=repeat., y=pcttip, group=sex, colour=sex)) + 
@@ -393,15 +403,35 @@ states <- c("al","ak","az","ar","ca","co",
             "sd","tn","tx","ut","vt","va","wa","wv","wi",
             "wy")
 
+# Change some fields for Tableau purposes
+df_tab <- df
+
+df_tab$State_iden <- ifelse(df_tab$State %in% states, 1,
+                        ifelse(df_tab$State %in% "canada", 2, 3))
+
+df_tab$State_iden2 <- ifelse(df_tab$State_iden == 1, "USA",
+                         ifelse(df_tab$State_iden == 2, "Canada", "Other"))
+
+df_tabrating <- df_tab[9:15]
+for (col in names(df_tabrating)) {
+  df_tab[[col]] <- ifelse(df_tab[[col]] == "Never", 1,
+                      ifelse(df_tab[[col]] == "Sometimes", 2,
+                             ifelse(df_tab[[col]] == "Often", 3, 4)))
+}  
+
+df_tab$selling_name <- ifelse(df_tab$selling == 1, "Never",
+                              ifelse(df_tab$selling == 2, "Sometimes",
+                                     ifelse(df_tab$selling == 3, "Often", "Always")))
+
+write.csv(df_tab, "Tableau_data.csv")
+  
 # USA = 1, Canada = 2, Other = 3
 df$State <- ifelse(df$State %in% states, 1,
                    ifelse(df$State %in% "canada", 2, 3))
 
 df$State <- factor(df$State, levels=c(1,2,3))
 
-
-
-# Change from order back to previous as the ratings are not categorical
+# Change data type from order back to default as the ratings are not categorical
 dfrating <- df[9:15]
 for (col in names(dfrating)) {
   df[[col]] <- ifelse(df[[col]] == "Never", 1,
@@ -411,9 +441,9 @@ for (col in names(dfrating)) {
 
 # Sex
 df$sex <- factor(df$sex, levels=c("Male", "Female"), labels=c(0,1))
+
 # Race of Worker
 df$race <- factor(df$race, levels=c("Asian", "Black", "Hispanic", "White"), labels=c(1,2,3,4))
-
 
 # Create formula
 formula_text <- paste(names(df)[8], "~",
@@ -443,21 +473,11 @@ summary(fit)
 #fit <- lm(formula, data=df)
 #summary(fit)
 
-
 ##### Assumption Testing #####
 # See link: http://www.statmethods.net/stats/regression.html
 
-library(car)
-
 # Check multicollinearity
 vif(fit)
-
-# see http://strata.uga.edu/6370/rtips/regressionPlots.html
-# To see all plots at once rather than 1 by 1
-par(mfrow=c(2,2)) # change panel layout to 2x2
-plot(fit)
-par(mfrow=c(1,1)) # change layout back to 1x1
-
 
 # Outliers
 outlierTest(fit)
@@ -468,10 +488,22 @@ cutoff <- 4/((nrow(df)-length(fit$coefficients)-2))
 plot(fit, which=4, cook.levels=cutoff)
 
 # Influence plot
-influencePlot(fit, id.method="noteworthy", main="Influence Plot", sub="Circle Size is proportional to Cook's Distance")
+influencePlot(fit, id.method="noteworthy", main="Influence Plot", 
+              sub="Circle Size is proportional to Cook's Distance")
 
-# Evaluate homoscedasticity / Breusch-Pagan test
-ncvTest(fit)
+# Lets check the influential observations and decide to remove them or not
+# The following are mentioned: 53, 72, 214, 321, 545, 589, 1472
+
+df[53,] # large bill with very large tip
+df[72,] # above average tip
+df[214,] # proportions don't add up properly, large tip - [DELETE]
+df[321,] # large Asian proportion, large bill with NO tip, worker has asian background
+df[545,] # proportions don't add up properly, extremely large bill with no tip - [DELETE]
+df[589,] # proportions don't make sense - [DELETE]
+df[1472,] # No tip and very old worker age
+
+# Delete observations: 214, 545, 589
+df <- df[-c(214,545,589),]
 
 # Our VIF check resulted in the 4 proportions having multicollinearity issues
 # Lets remove these 4 variables from our analysis
@@ -481,6 +513,7 @@ for (col in props) {
 }
 
 # Rerun tests?
+set.seed(12)
 formula_text <- paste(names(df)[4], "~",
                       paste(names(df[c(2:3,5:22)]), collapse="+"))
 formula <- as.formula(formula_text)
@@ -489,53 +522,63 @@ formula
 fit <- lm(formula, data=df)
 summary(fit)
 
-## There is no real difference! ##
+# There is no real difference!
 
-# Transformation on PCTTIP
-df <- cbind(df, 1/df$pcttip)
+# see http://strata.uga.edu/6370/rtips/regressionPlots.html
+# To see all plots at once rather than 1 by 1
+par(mfrow=c(2,2)) # change panel layout to 2x2
+plot(fit)
+par(mfrow=c(1,1)) # change layout back to 1x1
 
-df[[23]] <- NULL
+# Evaluate homoscedasticity / Breusch-Pagan test
+ncvTest(fit)
 
+# Transformation on PCTTIP - square root
+df2 <- cbind(df, sqrt(df$pcttip))
+df2[[4]] <- NULL
 
-formula_text <- paste(names(df)[23], "~",
-                      paste(names(df[c(2:3,5:22)]), collapse="+"))
-formula <- as.formula(formula_text)
-formula
+colnames(df2)[22] <- "pcttip" # fixes error as R cannot interpret the column name properly
 
-fit <- lm(formula, data=df)
+formula_text2 <- paste(names(df2)[22], "~",
+                      paste(names(df2[c(2:21)]), collapse="+"))
+formula2 <- as.formula(formula_text2)
+formula2
+
+set.seed(12)
+fit <- lm(formula2, data=df2)
 summary(fit)
 
-## By transforming the y-variable, there is once again no change in R^2 adjusted ##
+## By transforming the y-variable, the change in R^2 squared are miniscule
 
-# Recall most of the data are part of the US AND nearly all white workers. What if we remove these variables?
-df$State <- NULL
-df$race <- NULL
-df[[21]] <- NULL
+# Recall most of the data are part of the US AND nearly all white workers
+# What if we remove these variables?
+df3 <- df
 
-formula_text <- paste(names(df)[3], "~",
-                      paste(names(df[c(2,4:20)]), collapse="+"))
-formula <- as.formula(formula_text)
-formula
+df3$State <- NULL
+df3$race <- NULL
 
-fit <- lm(formula, data=df)
+formula_text3 <- paste(names(df3)[3], "~",
+                      paste(names(df3[c(2,4:20)]), collapse="+"))
+formula3 <- as.formula(formula_text3)
+formula3
+
+set.seed(12)
+fit <- lm(formula3, data=df3)
 summary(fit)
 
-## The adjusted R^2 fell even further!!!
+## The adjusted R^2 fell even further
 
+# Subsets Regression
+leaps <- regsubsets(formula, data=df, nbest=1)
+plot(leaps, scale="r2")
 
-# Residual plot
-crPlots(fit, terms=~.)
-# NOTE: these plots show us two things:
-# ppbill is heavily skewed to the left 
-# meaning many of the bills are on the cheaper end like $20 pp
+# The best model is the ones that are the darkest in the highest r^2
+# This includes:
+# State, ppbill, flair, repeat, customer_name, dependable_ selfdisciplined, reserved_quiet
 
-# birth year is skewed to the right
-# meaning the average age is on the younger side
-
-hist(df$birth_yr, breaks=c(10))
-hist(df$ppbill, breaks=c(10))
-
-# See heteroscedasticity remedies:
-#https://academic.macewan.ca/burok/Stat378/notes/remedies.pdf
-
-# What if we considered cases where the bill is only from $15 - $35?
+formula_textsub <- paste(names(df)[4], "~",
+                        paste(names(df[c(2,3,5,8,9,14,16)]), collapse="+"))
+formula4 <- as.formula(formula_textsub)
+formula4
+fit <- lm(formula4, data=df)
+summary(fit)
