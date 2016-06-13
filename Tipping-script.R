@@ -1,9 +1,14 @@
+# Prepared by: Kevin Nguyen
+# For: Tamer Abdou
+# Course: CKME 136
+# Session: Spring 2016
+
 # Load libraries
 library(car) # Rename State names and plots
 library(ggplot2) # Visualizations
 library(reshape2) # Melt function to assist in visualizating a map of the USA
-library(maps) # For USA map
 library(leaps) # Subsets regression
+library(maps) # For USA map
 
 ##### Import data into R #####
 
@@ -58,13 +63,12 @@ df$total_prop <- df$asian_prop + df$black_prop + df$hispanic_prop + df$white_pro
 
 # If total proportion is equal to or less than 1, multiply by 100 
 # Why? The user inputted in percentages rather than whole numbers
-# See http://stackoverflow.com/questions/30774096/based-on-the-value-in-one-column-change-the-value-in-another-column
 dfprop <- df[2:5]
 for (col in names(dfprop)) {
   df[[col]] <- ifelse(df$total_prop <= 1, df[[col]]*100, df[[col]])
 }
 
-# If total proportion is equal to or over 150, remove occurences from analysis
+# If total proportion is equal to or over 150, remove observation from analysis
 for (col in names(dfprop)) {
   df[[col]] <- ifelse(df$total_prop >= 150, NA, df[[col]])
 }
@@ -93,6 +97,7 @@ df$birth_yr <- ifelse(df$birth_yr < 100, df$birth_yr + 1900, df$birth_yr)
 
 # Clean variable: Customer Interaction Ratings
 # Use ordered instead of factor for easier visualization
+# By using ordered, R can properly order the x-axis of plots automatically
 dfrating <- df[8:14]
 for (col in names(dfrating)) {
   df[[col]] <- ordered(df[[col]], levels=c(1,2,3,4), labels=c("Never", "Sometimes", "Often", "Always"))
@@ -115,11 +120,12 @@ df$race <- factor(df$race, levels=c(1,2,3,4,5), labels=c("Asian", "Black", "Hisp
 # Keep only the rows that do not have any missing data
 df <- df[complete.cases(df),]
 
+# Export data to csv
 write.csv(df, "cleaned_data.csv")
 
 ##### Visualizations #####
 
-# Use df created before*
+# Use the dataframe, df, that was created earlier for this section
 
 # Plot distribution of sex of waiters/ waitresses
 gender <- ggplot(df, aes(x=sex, fill=sex)) + geom_bar()
@@ -166,7 +172,6 @@ p + xlab("Race of Worker") + ylab("Tip Percentage") +
   ggtitle("Tip percentage by Race of Worker") + coord_flip()
 
 ### Relationship: Customer Background VS. Server Background ###
-# See http://stackoverflow.com/questions/25752909/multiple-ggplot-linear-regression-lines
 
 # Asian Servers
 cols <- c("pcttip", "asian_prop", "black_prop", "hispanic_prop", "white_prop")
@@ -228,7 +233,7 @@ tableUS <- subset(df, State %in% names(states), select=State:race)
 tableCAD <- subset(df, State %in% "canada", select=State:race)
 tableOTHER <- df[-which(df$State %in% names(states) | df$State %in% "canada"),]
 
-# See how much observations there are for US workers and Canadian workers
+# See how much observations there are for US workers, Canadian workers, and others
 length(tableUS$State)
 length(tableCAD$State)
 length(tableOTHER$State)
@@ -383,15 +388,17 @@ ggplot(data=df, aes(x=thanks, y=pcttip, group=sex, colour=sex)) +
   stat_summary(fun.y="mean", geom="line") + 
   xlab("") + ylab("Tip %") + ggtitle("Tip % by Gender and Customer Interaction: Thanking")
 
-### Note: The survey fillers may have mistakenly understood 1 as always and 4 as never (as vice versa)
+### Note: The survey fillers may have mistakenly 
+### understood 1 as always and 4 as never (as vice versa)
 ### This may explain the unrational results given
 
 ##### Regression Model Analysis / Setting Up #####
 
-rm(list = ls()) # remove work environment to start fresh
+# Remove work environment to start fresh
+rm(list = ls())
 
-#setwd("C:/Users/Kevin.Nguyen/Dropbox/CKME136")
-setwd("C:/Users/Kevin/Desktop/Dropbox/Dropbox/CKME136")
+setwd("C:/Users/Kevin.Nguyen/Dropbox/CKME136")
+#setwd("C:/Users/Kevin/Desktop/Dropbox/Dropbox/CKME136")
 df <- read.csv(file="clean_string_data.csv", head=TRUE)
 
 # Categorize the State variable
@@ -404,6 +411,8 @@ states <- c("al","ak","az","ar","ca","co",
             "wy")
 
 # Change some fields for Tableau purposes
+# This section is entirely for Tableau only, the file I used for Tableau
+# is exported below as "Tableau_data.csv"
 df_tab <- df
 
 df_tab$State_iden <- ifelse(df_tab$State %in% states, 1,
@@ -452,8 +461,9 @@ formula <- as.formula(formula_text)
 formula
 
 ##### Model Building #####
-# Create Multiple Regression Linear Example
-set.seed(12)
+
+# Build first multiple linear regression model
+set.seed(12) # for reproducibility
 fit <- lm(formula, data=df)
 summary(fit)
 
@@ -477,10 +487,10 @@ influencePlot(fit, id.method="noteworthy", main="Influence Plot",
 
 df[53,] # large bill with very large tip
 df[72,] # above average tip
-df[214,] # proportions don't add up properly, large tip - [DELETE]
+df[214,] # proportions don't add up properly, large tip - [DELETE THIS]
 df[321,] # large Asian proportion, large bill with NO tip, worker has asian background
-df[545,] # proportions don't add up properly, extremely large bill with no tip - [DELETE]
-df[589,] # proportions don't make sense - [DELETE]
+df[545,] # proportions don't add up properly, extremely large bill with no tip - [DELETE THIS]
+df[589,] # proportions don't make sense - [DELETE THIS]
 df[1472,] # No tip and very old worker age
 
 # Delete observations: 214, 545, 589
@@ -493,7 +503,7 @@ for (col in props) {
   df[[col]] <- NULL
 }
 
-# Rerun tests?
+# Rerun tests
 set.seed(12)
 formula_text <- paste(names(df)[4], "~",
                       paste(names(df[c(2:3,5:22)]), collapse="+"))
@@ -503,10 +513,7 @@ formula
 fit <- lm(formula, data=df)
 summary(fit)
 
-# There is no real difference!
-
-# see http://strata.uga.edu/6370/rtips/regressionPlots.html
-# To see all plots at once rather than 1 by 1
+# There is no real difference between R^2 values!
 par(mfrow=c(2,2)) # change panel layout to 2x2
 plot(fit)
 par(mfrow=c(1,1)) # change layout back to 1x1
@@ -514,11 +521,12 @@ par(mfrow=c(1,1)) # change layout back to 1x1
 # Evaluate homoscedasticity / Breusch-Pagan test
 ncvTest(fit)
 
-# Transformation on PCTTIP - square root
+# Transformation on PCTTIP (dependent variable) - square root
 df2 <- cbind(df, sqrt(df$pcttip))
 df2[[4]] <- NULL
 
-colnames(df2)[22] <- "pcttip" # fixes error as R cannot interpret the column name properly
+# Change column name back to "pcttip"
+colnames(df2)[22] <- "pcttip"
 
 formula_text2 <- paste(names(df2)[22], "~",
                       paste(names(df2[c(2:21)]), collapse="+"))
@@ -529,7 +537,7 @@ set.seed(12)
 fit <- lm(formula2, data=df2)
 summary(fit)
 
-## By transforming the y-variable, the change in R^2 squared are miniscule
+# By transforming the y-variable, the change in R^2 is once again very small
 
 # Recall most of the data are part of the US AND nearly all white workers
 # What if we remove these variables?
@@ -547,13 +555,13 @@ set.seed(12)
 fit <- lm(formula3, data=df3)
 summary(fit)
 
-## The adjusted R^2 fell even further
+# The adjusted R^2 fell even further
 
 # Subsets Regression
 leaps <- regsubsets(formula, data=df, nbest=1)
 plot(leaps, scale="r2")
 
-# The best model is the ones that are the darkest in the highest r^2
+# The best model is the one on the top column, with the highest R^2
 # This includes:
 # State, ppbill, flair, repeat, customer_name, dependable_ selfdisciplined, reserved_quiet
 
@@ -563,3 +571,6 @@ formula4 <- as.formula(formula_textsub)
 formula4
 fit <- lm(formula4, data=df)
 summary(fit)
+
+# See IPython Notebook version of this code for more detailed conclusions
+# Direct link: https://github.com/kn-kn/Exploring-Tipping-Patterns/blob/master/Tip-Project.ipynb
