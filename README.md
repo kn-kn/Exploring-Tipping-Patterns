@@ -1,13 +1,17 @@
 # Exploring-Tipping-Patterns
 Project exploring tipping patterns and characteristics using R
 
+**If you are looking to skim over the project without going into too much detail, I recommend simply viewing the IPython Notebook. You can easily access it through this link:**
+
+https://github.com/kn-kn/Exploring-Tipping-Patterns/blob/master/Tip-Project.ipynb
+
 You can directly access the raw data used in this project through: http://www.had.co.nz/stat480/data/server-survey.csv
 
 The Tableau storyboard created for this project can be accessed through: https://public.tableau.com/profile/loo.boo#!/vizhome/TippingProject/Story
 
 **Description of Files**
 - Tipping-script.R: The raw R script for this project
-- Tip-Project.ipynb: The Jupyter notebook created for this project; script is very similar to the R script above
+- Tip-Project.ipynb: The Jupyter notebook created for this project; the ouputs are very similar to the R script above
 - server-survey.csv: The raw data (can be accessed using the link mentioned above)
 - clean_string_data.csv: The data used for the multiple regression analysis
 - Tableau_data_2.xlsx: Dataset used exclusively to prepare the Tableau storyboard
